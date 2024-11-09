@@ -1,16 +1,14 @@
+import { CONSTANTS } from "@/lib/constants"
 import { type ConversionSettings } from "@/lib/types"
+import { generateUniqueHash } from "@/utils/generate-unique-hash"
 import { rateLimit } from "@/utils/rate-limit"
 import { responseHandler } from "@/utils/response-handler"
-import { Redis } from "@upstash/redis"
 import archiver from "archiver"
 import { randomUUID } from "crypto"
-import { mkdir } from "fs/promises"
+import { mkdir, readFile, stat } from "fs/promises"
 import { NextRequest, NextResponse } from "next/server"
 import { join } from "path"
 import sharp from "sharp"
-
-const redis = Redis.fromEnv()
-const CACHE_TTL = 3600 // 1 hour
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,38 +34,42 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Generate cache key based on files and settings
     const filesHash = await Promise.all(
       files.map(async (file) => {
         const buffer = await file.arrayBuffer()
         return Buffer.from(buffer).toString("base64")
       })
     )
-    const cacheKey = `image-conversion:${JSON.stringify({
-      filesHash,
-      settings,
-    })}`
+    // Generate unique path based on image properties
+    const uniquePath = generateUniqueHash(filesHash, settings)
+    const outputDir = join(process.cwd(), CONSTANTS.FILESYSTEM.IMAGE.OUTPUT_DIR, uniquePath)
+    const zipPath = join(outputDir, `converted-images.zip`)
 
-    // Check cache
-    // const cachedResult = await redis.get(cacheKey)
-    // if (cachedResult) {
-    //   return new NextResponse(Buffer.from(cachedResult as string, "base64"), {
-    //     headers: {
-    //       "Content-Type": "application/zip",
-    //       "Content-Disposition": 'attachment; filename="converted-images.zip"',
-    //     },
-    //   })
-    // }
+    // + Check if the zip file already exists
+    try {
+      await stat(zipPath)
+      const zipBuffer = await readFile(zipPath)
+      console.info("Zip file exists, returning cached file...")
 
-    const sessionId = randomUUID()
-    const outputDir = join(process.cwd(), "tmp", sessionId)
+      return new NextResponse(zipBuffer, {
+        headers: {
+          "Content-Type": "application/zip",
+          "Content-Disposition": 'attachment; filename="converted-images.zip"',
+        },
+      })
+    } catch {
+      // + Continue processing if zip does not exist
+      console.info("Zip file does not exist, processing images...")
+    }
+
     await mkdir(outputDir, { recursive: true })
 
-    // Process images
+    // + Process images
     const processedFiles = await Promise.all(
       files.map(async (file) => {
         const buffer = Buffer.from(await file.arrayBuffer())
         const image = sharp(buffer)
+        const quality = settings.quality || CONSTANTS.IMAGE_PROCESSING.QUALITY
 
         if (settings.width || settings.height) {
           image.resize(settings.width, settings.height, {
@@ -75,15 +77,15 @@ export async function POST(request: NextRequest) {
           })
         }
 
-        switch (settings.format) {
+        switch (settings.format || CONSTANTS.CONVERSION.DEFAULT_FORMAT) {
           case "webp":
-            image.webp({ quality: settings.quality })
+            image.webp({ quality: quality })
             break
           case "png":
-            image.png({ quality: settings.quality })
+            image.png({ quality: quality })
             break
           case "jpg":
-            image.jpeg({ quality: settings.quality })
+            image.jpeg({ quality: quality })
             break
           case "gif":
             image.gif()
@@ -96,11 +98,9 @@ export async function POST(request: NextRequest) {
       })
     )
 
-    // Create ZIP archive
+    // + Create ZIP archive
     const archive = archiver("zip", { zlib: { level: 9 } })
-    const chunks: Buffer[] = []
-
-    archive.on("data", (chunk) => chunks.push(chunk))
+    archive.pipe(require("fs").createWriteStream(zipPath))
 
     processedFiles.forEach((file, index) => {
       archive.file(file, {
@@ -110,13 +110,8 @@ export async function POST(request: NextRequest) {
 
     await archive.finalize()
 
-    const zipBuffer = Buffer.concat(chunks as unknown as readonly Uint8Array[])
-
-    // Cache the result
-    // await redis.set(cacheKey, zipBuffer.toString("base64"), {
-    //   ex: CACHE_TTL,
-    // })
-
+    // Read and send the ZIP file
+    const zipBuffer = await readFile(zipPath)
     return new NextResponse(zipBuffer, {
       headers: {
         "Content-Type": "application/zip",
