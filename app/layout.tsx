@@ -2,6 +2,7 @@ import { Navbar } from "@/components/Navbar"
 import { Toaster } from "@/components/ui/sonner"
 import { QueryProvider } from "@/providers/Query.Provider"
 import { ThemeProvider } from "@/providers/Theme.Provider"
+import { Analytics } from "@vercel/analytics/react"
 import type { Metadata } from "next"
 import { Lato } from "next/font/google"
 import "/styles/globals.scss"
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Toaster />
           </QueryProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   )
