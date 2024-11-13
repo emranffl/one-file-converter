@@ -1,0 +1,12 @@
+{
+  "functions": {
+    "api/og-screenshot": {
+      "includeFiles": ".cache/puppeteer/**/*"
+    }
+  },
+  "build": {
+    "env": {
+      "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true"
+    }
+  }
+}
