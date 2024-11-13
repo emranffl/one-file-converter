@@ -1,6 +1,7 @@
 {
   "functions": {
-    "api/og-screenshot": {
+    "api/og-screenshot.js": {
+      "runtime": "edge",
       "includeFiles": ".cache/puppeteer/**/*"
     }
   },
