@@ -1,6 +1,6 @@
 {
   "functions": {
-    "/api/og-screenshot": {
+    "app/api/og-screenshot": {
       "includeFiles": ".cache/puppeteer/**/*"
     }
   },
