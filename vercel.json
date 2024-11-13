@@ -1,7 +1,9 @@
 {
   "functions": {
     "api/og-screenshot.js": {
-      "runtime": "edge",
+      "runtime": "nodejs20.x",
+      "memory": 256,
+      "maxDuration": 10,
       "includeFiles": ".cache/puppeteer/**/*"
     }
   },
