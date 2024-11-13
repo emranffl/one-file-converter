@@ -9,7 +9,7 @@ import { buttonVariants } from "./ui/button"
 const Navbar = () => {
   return (
     <>
-      <nav className="border-b">
+      <nav className="sticky top-0 border-b bg-slate-50 dark:bg-background">
         <div className="container flex h-16 items-center px-4 sm:px-8">
           <div className="flex items-center space-x-4">
             <Logo />

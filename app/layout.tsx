@@ -1,10 +1,14 @@
+import Footer from "@/components/Footer"
 import { Navbar } from "@/components/Navbar"
 import { Toaster } from "@/components/ui/sonner"
+import { SEO } from "@/configs/seo.config"
+import { cn } from "@/lib/utils"
 import { QueryProvider } from "@/providers/Query.Provider"
 import { ThemeProvider } from "@/providers/Theme.Provider"
 import { Analytics } from "@vercel/analytics/react"
 import type { Metadata } from "next"
 import { Lato } from "next/font/google"
+import { headers } from "next/headers"
 import "/styles/globals.scss"
 
 const lato = Lato({
@@ -13,20 +17,23 @@ const lato = Lato({
   display: "swap",
 })
 
-export const metadata: Metadata = {
-  title: "Image Converter - Convert Images Online",
-  description:
-    "Free online tool to convert images between different formats with advanced options for quality and size.",
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    ...SEO,
+    // dynamically get the host from the Next headers
+    metadataBase: new URL(`https://${headers().get("host")}`),
+  }
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={lato.className}>
+      <body className={cn(lato.className, "flex min-h-screen flex-col")}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <QueryProvider>
             <Navbar />
             {children}
+            <Footer />
             <Toaster />
           </QueryProvider>
         </ThemeProvider>

@@ -6,6 +6,12 @@ export const LINKS = {
       home: "/convert/image",
     },
   },
+  PRIVACY_POLICY: {
+    home: "/privacy-policy",
+  },
+  TERMS_AND_CONDITIONS: {
+    home: "/terms-and-conditions",
+  },
 } as const
 
 export const PATHS = {
