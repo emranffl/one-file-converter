@@ -1,12 +1,11 @@
 {
-  "functions": {
-    "app/api/og-screenshot": {
-      "includeFiles": ".cache/puppeteer/**/*"
-    }
-  },
   "build": {
     "env": {
-      "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true"
+      "PUPPETEER_SKIP_DOWNLOAD": "true"
     }
-  }
+  },
+  "install": [
+    "apt-get update",
+    "apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libxcomposite1 libxrandr2 libgbm-dev libpangocairo-1.0-0 libpangoft2-1.0-0 libxdamage1 libjpeg-dev libxkbcommon0"
+  ]
 }
