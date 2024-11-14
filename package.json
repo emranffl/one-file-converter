@@ -18,7 +18,7 @@
     "prepare": "husky install",
     "test": "jest",
     "test:watch": "jest --watch",
-    "postinstall": "pnpm exec playwright install && pnpm exec playwright install-deps"
+    "postinstall": "if [ -n \"$CI\" ]; then echo 'Skipping Playwright dependencies on CI'; else pnpm exec playwright install && pnpm exec playwright install-deps; fi"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs,css,scss,json,html}": [
