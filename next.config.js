@@ -10,19 +10,6 @@ const nextConfig = {
   images: {
     domains: ["images.unsplash.com"],
   },
-  async headers() {
-    return [
-      {
-        source: "/api/og-screenshot",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "no-store",
-          },
-        ],
-      },
-    ]
-  },
 }
 
 module.exports = nextConfig
