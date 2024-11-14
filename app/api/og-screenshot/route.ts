@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { chromium } from "playwright"
 
+export const config = {
+  runtime: "nodejs",
+}
+
 export async function GET(req: NextRequest) {
   // Launch the Playwright browser
   const browser = await chromium.launch({ headless: true })
