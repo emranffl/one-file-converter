@@ -18,7 +18,7 @@
     "prepare": "husky install",
     "test": "jest",
     "test:watch": "jest --watch",
-    "postinstall": "pnpm exec playwright install"
+    "postinstall": "pnpm exec playwright install && pnpm exec playwright install-deps"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs,css,scss,json,html}": [
