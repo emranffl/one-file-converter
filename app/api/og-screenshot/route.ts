@@ -3,7 +3,9 @@ import puppeteer from "puppeteer"
 
 export async function GET(req: NextRequest) {
   // Launch the Puppeteer browser
-  const browser = await puppeteer.launch()
+  const browser = await puppeteer.launch({
+    headless: true,
+  })
   const page = await browser.newPage()
   const view = req.nextUrl.searchParams.get("view") || "/"
 
