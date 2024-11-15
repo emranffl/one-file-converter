@@ -1,3 +1,4 @@
+import { responseHandler } from "@/utils/response-handler"
 import chrome from "chrome-aws-lambda"
 import { NextRequest, NextResponse } from "next/server"
 import puppeteer from "puppeteer-core"
@@ -6,12 +7,15 @@ export async function GET(req: NextRequest) {
   let browser = null
 
   try {
+    console.info("Executable Path:", await chrome.executablePath)
+
     // Use chrome-aws-lambda in serverless environments
     const options = process.env.AWS_REGION
       ? {
           args: chrome.args,
-          executablePath: await chrome.executablePath,
+          executablePath: (await chrome.executablePath) || "/usr/bin/google-chrome",
           headless: chrome.headless,
+          userDataDir: "/tmp/chrome-user-data",
         }
       : {
           args: [],
@@ -56,7 +60,13 @@ export async function GET(req: NextRequest) {
     })
   } catch (error) {
     console.error("Error taking screenshot:", error)
-    return new NextResponse("Failed to generate screenshot", { status: 500 })
+
+    return responseHandler({
+      status: 500,
+      error: "Internal Server Error",
+      message: (error as Error).message,
+      stack: (error as Error).stack,
+    })
   } finally {
     if (browser) {
       await browser.close()
