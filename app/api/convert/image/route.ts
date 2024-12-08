@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server"
 import sharp from "sharp"
 
 // Extend ConversionSettings to include "jpeg"
-type ExtendedConversionSettings = ConversionSettings & { format?: "webp" | "png" | "jpeg" | "gif" }
+type ExtendedConversionSettings = ConversionSettings & { format?: ConversionSettings["format"] }
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,8 +47,10 @@ export async function POST(request: NextRequest) {
       }
 
       let outputFormat = settings.format || CONSTANTS.CONVERSION.DEFAULT_FORMAT
-      // if (outputFormat === "jpg") outputFormat = "jpeg"
+      // @ts-expect-error
+      if (outputFormat === "jpeg") outputFormat = "jpg"
 
+      // @ts-expect-error
       const processedBuffer = await image[outputFormat]({ quality }).toBuffer()
       archive.append(processedBuffer, { name: `image-${index + 1}.${outputFormat}` })
     }
