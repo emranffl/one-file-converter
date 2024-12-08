@@ -2,7 +2,8 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { SOCIAL_MEDIA_PRESETS, type ConversionSettings } from "@/lib/types"
+import { ConversionSettings } from "@/lib/schemas/image-conversion-request"
+import { SOCIAL_MEDIA_PRESETS } from "@/lib/types"
 
 interface SocialMediaPresetsProps {
   onPresetSelect: (settings: Partial<ConversionSettings>) => void

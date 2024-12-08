@@ -1,11 +1,13 @@
-export interface ConversionSettings {
-  format: "webp" | "png" | "jpg" | "gif"
-  quality: number
-  width?: number
-  height?: number
-  maintainAspectRatio: boolean
-  preset?: SocialMediaPreset
-}
+// export interface ConversionSettings {
+//   format: "webp" | "png" | "jpg" | "gif"
+//   quality: number
+//   width?: number
+//   height?: number
+//   maintainAspectRatio: boolean
+//   preset?: SocialMediaPreset
+// }
+
+import { ConversionSettings } from "./schemas/image-conversion-request"
 
 export interface SocialMediaPreset {
   name: string

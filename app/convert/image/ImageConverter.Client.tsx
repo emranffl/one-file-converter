@@ -5,7 +5,7 @@ import { ImageSettings } from "@/app/convert/Components/ImageSettings.Client"
 import { SocialMediaPresets } from "@/app/convert/Components/SocialMediaPresets.Client"
 import { Button } from "@/components/ui/button"
 import { PATHS } from "@/configs/router.config"
-import { type ConversionSettings } from "@/lib/types"
+import { ConversionSettings, conversionSettingsSchema } from "@/lib/schemas/image-conversion-request"
 import { cn } from "@/lib/utils"
 import { useMutation } from "@tanstack/react-query"
 import { ImagePlus, RefreshCw, Upload } from "lucide-react"
@@ -27,6 +27,15 @@ export function ImageConverter() {
     height: undefined,
     maintainAspectRatio: true,
   })
+
+  const validateSettings = () => {
+    const result = conversionSettingsSchema.safeParse(settings)
+    if (!result.success) {
+      toast.error(result.error.errors.map((err) => err.message).join(", "))
+      return false
+    }
+    return true
+  }
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -56,6 +65,8 @@ export function ImageConverter() {
 
   const convertMutation = useMutation({
     mutationFn: async () => {
+      if (!validateSettings()) return
+
       const formData = new FormData()
       files.forEach((file) => formData.append("images", file))
       formData.append("settings", JSON.stringify(settings))

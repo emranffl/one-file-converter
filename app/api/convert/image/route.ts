@@ -1,13 +1,10 @@
 import { CONSTANTS } from "@/lib/constants"
-import { type ConversionSettings } from "@/lib/types"
+import { ConversionSettings, imageConversionRequestSchema } from "@/lib/schemas/image-conversion-request"
 import { rateLimit } from "@/utils/rate-limit"
 import { responseHandler } from "@/utils/response-handler"
 import archiver from "archiver"
 import { NextRequest, NextResponse } from "next/server"
 import sharp from "sharp"
-
-// Extend ConversionSettings to include "jpeg"
-type ExtendedConversionSettings = ConversionSettings & { format?: ConversionSettings["format"] }
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,32 +19,37 @@ export async function POST(request: NextRequest) {
     }
     const formData = await request.formData()
     const files = formData.getAll("images") as File[]
-    const settings = JSON.parse(formData.get("settings") as string) as ExtendedConversionSettings
+    const settings = JSON.parse(formData.get("settings") as string) as ConversionSettings
 
-    if (!files.length) {
+    // Validate payload
+    const parsedData = imageConversionRequestSchema.safeParse({
+      images: files,
+      settings,
+    })
+
+    if (!parsedData.success) {
       return responseHandler({
-        error: "Bad Request",
-        message: "No images were provided for conversion",
+        error: "Validation Error",
+        message: parsedData.error.errors.map((err) => err.message).join(", "),
         status: 400,
       })
     }
-
     const archive = archiver("zip", { zlib: { level: 9 } })
 
     const quality = settings.quality || CONSTANTS.IMAGE_PROCESSING.QUALITY
 
-    for (const [index, file] of files.entries()) {
+    const { images, settings: validSettings } = parsedData.data
+    for (const [index, file] of images.entries()) {
       const buffer = Buffer.from(await file.arrayBuffer())
       const image = sharp(buffer)
 
-      if (settings.width || settings.height) {
-        image.resize(settings.width, settings.height, {
-          fit: settings.maintainAspectRatio ? "inside" : "fill",
+      if (validSettings.width || validSettings.height) {
+        image.resize(validSettings.width, validSettings.height, {
+          fit: validSettings.maintainAspectRatio ? "inside" : "fill",
         })
       }
 
-      let outputFormat = settings.format || CONSTANTS.CONVERSION.DEFAULT_FORMAT
-      // @ts-expect-error
+      let outputFormat = validSettings.format || CONSTANTS.CONVERSION.DEFAULT_FORMAT
       if (outputFormat === "jpeg") outputFormat = "jpg"
 
       // @ts-expect-error
