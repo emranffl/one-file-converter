@@ -1,5 +1,5 @@
 // export interface ConversionSettings {
-//   format: "webp" | "png" | "jpg" | "gif"
+//   format: "webp" | "png" | "jpeg" | "gif"
 //   quality: number
 //   width?: number
 //   height?: number
@@ -21,30 +21,30 @@ export const SOCIAL_MEDIA_PRESETS: Record<string, SocialMediaPreset> = {
     name: "Instagram Square",
     width: 1080,
     height: 1080,
-    format: "jpg",
+    format: "jpeg",
   },
   "instagram-portrait": {
     name: "Instagram Portrait",
     width: 1080,
     height: 1350,
-    format: "jpg",
+    format: "jpeg",
   },
   "twitter-post": {
     name: "Twitter Post",
     width: 1200,
     height: 675,
-    format: "jpg",
+    format: "jpeg",
   },
   "facebook-cover": {
     name: "Facebook Cover",
     width: 1640,
     height: 624,
-    format: "jpg",
+    format: "jpeg",
   },
   "linkedin-post": {
     name: "LinkedIn Post",
     width: 1200,
     height: 627,
-    format: "jpg",
+    format: "jpeg",
   },
 }

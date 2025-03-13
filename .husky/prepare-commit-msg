@@ -1,8 +1,7 @@
 # + This script is used to disable commiting from the VS Code source control.
 
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-. "$(dirname -- "$0")/constants"
+. "$(dirname -- "$0")/lib/constants"
 
 #!/bin/sh
 

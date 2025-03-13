@@ -50,10 +50,23 @@ export async function POST(request: NextRequest) {
       }
 
       let outputFormat = validSettings.format || CONSTANTS.CONVERSION.DEFAULT_FORMAT
-      if (outputFormat === "jpeg") outputFormat = "jpg"
 
-      // @ts-expect-error
-      const processedBuffer = await image[outputFormat]({ quality }).toBuffer()
+      let processedBuffer: Buffer
+      switch (outputFormat) {
+        case "dz":
+        case "fits":
+        case "jp2k":
+        case "magick":
+        case "openslide":
+        case "pdf":
+        case "ppm":
+        case "svg":
+        case "raw":
+        case "vips":
+          throw new Error(`Unsupported output format: ${outputFormat}`)
+        default:
+          processedBuffer = await image[outputFormat]({ quality }).toBuffer()
+      }
       archive.append(processedBuffer, { name: `image-${index + 1}.${outputFormat}` })
     }
 

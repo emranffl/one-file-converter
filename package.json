@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS='--max-old-space-size=6144 --trace-warnings --inspect --trace-uncaught' rm -rf .next && next dev",
-    "build": "rm -rf .next && NODE_ENV=production next build",
+    "predev": "NODE_OPTIONS='--max-old-space-size=6144 --trace-warnings --inspect --trace-uncaught' rm -rf .next",
+    "dev": "next dev",
+    "prebuild": "rm -rf .next",
+    "build": "NODE_ENV=production next build",
     "clean-install": "rm -rf node_modules pnpm-lock.yaml yarn.lock bun.lockb package-lock.json && pnpm install",
     "clean-install-pmy": "rm -rf node_modules pnpm-lock.yaml yarn.lock bun.lockb package-lock.json && yarn",
     "clean-install-pmb": "rm -rf node_modules pnpm-lock.yaml yarn.lock bun.lockb package-lock.json && bun install",

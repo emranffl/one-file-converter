@@ -1,0 +1,6 @@
+# + This script is used to define helper functions for the hooks.
+
+# Function to check if a package.json script exists
+has_script() {
+  jq -e ".scripts[\"$1\"]" package.json > /dev/null 2>&1
+}

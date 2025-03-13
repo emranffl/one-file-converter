@@ -1,11 +1,20 @@
-# + This script is used to format the code before committing.
+# + This script is used to check lint errors before committing to the local repository.
 
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-. "$(dirname -- "$0")/constants"
 
-#!/bin/sh
+# - imports
+. "$(dirname -- "$0")/lib/package-manager"
 
-# echo "\n\n${BLUE}Formatting staged files from${RESET} ${YELLOW}$(basename "$0")${RESET} ${BLUE}hook. Courtesy: ${RESET}\e]8;;https://www.linkedin.com/in/emranffl\e\\@emranffl\e]8;;\e\\n\n"
+# - construct command
+LINT_COMMAND="$PACKAGE_MANAGER run lint"
 
-pnpm run pre-commit
+# - log if ran from terminal
+if [ -t 1 ]; then
+  echo "\n\n${BLUE}Running predefined task(s) from${RESET} ${YELLOW}$(basename "$0")${RESET} ${BLUE}hook. Courtesy: ${RESET} https://linkedin.com/in/emranffl."
+
+  # log command 
+  echo "\n${BLUE}$LINT_COMMAND${RESET}"
+fi
+
+# - run command
+$LINT_COMMAND

@@ -2,7 +2,12 @@ import { z } from "zod"
 
 // Define the schema for conversion settings
 export const conversionSettingsSchema = z.object({
-  format: z.enum(["jpg", "jpeg", "png", "webp", "gif"]).optional().default("webp"),
+  format: z
+    .enum([
+      'dz', 'fits', 'gif', 'heif', 'jp2k', 'jpeg', 'jxl', 'magick', 'openslide', 'pdf', 'png', 'ppm', 'raw', 'svg', 'tiff', 'vips', 'webp',
+    ])
+    .optional()
+    .default("webp"),
   quality: z.number().min(1).max(100).default(80),
   width: z.number().min(1).optional(),
   height: z.number().min(1).optional(),

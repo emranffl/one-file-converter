@@ -1,14 +1,13 @@
 # + This script is used to generate a changelog file from the commit messages.
 
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-. "$(dirname -- "$0")/constants"
+. "$(dirname -- "$0")/lib/constants"
 . "$(dirname -- "$0")/../.env"
 
 #!/bin/sh
 
 if [ ! $VERSION_CONTROL_HOST ]; then
-  VERSION_CONTROL_HOST="https://gitlab.com"
+  VERSION_CONTROL_HOST="https://github.com"
 fi
 remote=$(git remote show)
 

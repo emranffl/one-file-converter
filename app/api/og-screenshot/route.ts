@@ -7,8 +7,6 @@ export async function GET(req: NextRequest) {
   let browser = null
 
   try {
-    console.info("Executable Path:", await chrome.executablePath)
-
     // Use chrome-aws-lambda in serverless environments
     const options = process.env.AWS_REGION
       ? {

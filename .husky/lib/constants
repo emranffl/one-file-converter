@@ -1,6 +1,4 @@
-# + Th
-
-#!/bin/sh
+# + This script is used to set colors for terminal output.
 
 # colors for terminal output
 if [ -t 1 ]; then
