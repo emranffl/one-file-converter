@@ -1,23 +1,48 @@
-import { z } from "zod"
+import { z } from "zod";
 
 // Define the schema for conversion settings
 export const conversionSettingsSchema = z.object({
   format: z
-    .enum([
-      'dz', 'fits', 'gif', 'heif', 'jp2k', 'jpeg', 'jxl', 'magick', 'openslide', 'pdf', 'png', 'ppm', 'raw', 'svg', 'tiff', 'vips', 'webp',
-    ])
+    .enum(["dz", "fits", "gif", "heif", "jp2k", "jpeg", "jxl", "magick", "openslide", "pdf", "png", "ppm", "raw", "svg", "tiff", "vips", "webp"])
     .optional()
     .default("webp"),
   quality: z.number().min(1).max(100).default(80),
-  width: z.number().min(1).optional(),
-  height: z.number().min(1).optional(),
-  maintainAspectRatio: z.boolean().default(true),
-})
+  resize: z
+    .object({
+      width: z.number().min(1).optional(),
+      height: z.number().min(1).optional(),
+      maintainAspectRatio: z.boolean().default(true),
+      fit: z.enum(["cover", "contain", "fill", "inside", "outside"]).optional(),
+      position: z.string().optional(),
+    })
+    .optional(),
+  rotate: z
+    .object({
+      angle: z.number(),
+      background: z.string().optional(),
+    })
+    .optional(),
+  flip: z.boolean().optional(),
+  flop: z.boolean().optional(),
+  blur: z
+    .object({
+      sigma: z.number().min(0.3).max(1000),
+    })
+    .optional(),
+  sharpen: z
+    .object({
+      sigma: z.number().min(0.3).max(1000),
+      flat: z.number().optional(),
+      jagged: z.number().optional(),
+    })
+    .optional(),
+  // Add more Sharp operations as needed (e.g., grayscale, tint, etc.)
+});
 
 // Define the schema for the request payload
 export const imageConversionRequestSchema = z.object({
   images: z.array(z.instanceof(File)).min(1, "At least one image is required"),
   settings: conversionSettingsSchema,
-})
+});
 
-export type ConversionSettings = z.infer<typeof conversionSettingsSchema>
+export type ConversionSettings = z.infer<typeof conversionSettingsSchema>;
