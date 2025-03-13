@@ -2,6 +2,9 @@ import { z } from "zod";
 
 // Define the schema for conversion settings
 export const conversionSettingsSchema = z.object({
+  maintainAspectRatio: z.boolean().default(true),
+  width: z.number().min(1).optional(),
+  height: z.number().min(1).optional(),
   format: z
     .enum(["dz", "fits", "gif", "heif", "jp2k", "jpeg", "jxl", "magick", "openslide", "pdf", "png", "ppm", "raw", "svg", "tiff", "vips", "webp"])
     .optional()
