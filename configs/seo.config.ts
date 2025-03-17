@@ -20,10 +20,11 @@ const DESCRIPTION = String(process.env.NEXT_PUBLIC_SEO_DESCRIPTION)
 
 export const SEO: Metadata = {
   authors: {
-    name: `${process.env.NEXT_PUBLIC_APP_NAME}`,
-    url: `${process.env.NEXT_PUBLIC_APP_URL}`,
+    name: 'Emran Hossain',
+    url: 'https://emranffl.com',
   },
   category: "website",
+  creator: "@emranffl",
   description: DESCRIPTION,
   keywords: String(process.env.NEXT_PUBLIC_SEO_KEYWORDS)
     .split("|")
@@ -48,6 +49,7 @@ export const SEO: Metadata = {
   title: TITLE,
   twitter: {
     card: "summary_large_image",
+    creator: "@emranffl",
     description: DESCRIPTION,
     title: TITLE,
     images: {
@@ -56,5 +58,10 @@ export const SEO: Metadata = {
       width: 1280,
       height: 720,
     },
+  },
+  verification: {
+    other: {
+      "google-adsense-account": "ca-pub-5556640164844079",
+    }
   },
 }
