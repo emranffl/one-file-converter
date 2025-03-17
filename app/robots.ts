@@ -1,11 +1,12 @@
 import { MetadataRoute } from "next"
 
 export default function robots(): MetadataRoute.Robots {
-  const rules =
-    String(process.env.NEXT_PUBLIC_APP_URL).includes("staging") ||
-    String(process.env.NEXT_PUBLIC_APP_URL).includes("stage")
-      ? { disallow: "*" }
-      : { allow: "*" }
+  const URL = String(process.env.NEXT_PUBLIC_APP_URL)
+  const disallowedEnvironments = ["staging", "stage", "development", "dev", "git", "local"];
+  const rules = disallowedEnvironments.some(env => URL.includes(env))
+    ? { disallow: "*" }
+    : { allow: "*" }
+
   return {
     rules: {
       userAgent: "*",
