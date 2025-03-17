@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
         jpeg: { quality: validSettings.quality },
         webp: { quality: validSettings.quality },
         avif: { quality: validSettings.quality },
-        png: { compressionLevel: Math.round((validSettings.quality || 80) / 10) },
+        png: { compressionLevel: Math.min(9, Math.max(0, Math.round((validSettings.quality || 80) / 10))) },
         tiff: {},
         gif: {},
         heif: { quality: validSettings.quality },
@@ -104,8 +104,8 @@ export async function POST(request: NextRequest) {
         jxl: {},
       };
 
-      if (outputFormat === "jp2k"|| outputFormat === "vips") throw new Error("Format is not supported yet");
-      
+      if (outputFormat === "jp2k" || outputFormat === "vips") throw new Error("Format is not supported yet");
+
 
       const processedBuffer = await image
         .toFormat(outputFormat, formatOptions[outputFormat] || {})
