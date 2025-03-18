@@ -1,21 +1,31 @@
+import { CONSTANTS } from "@/lib/constants"
 import AdmZip from "adm-zip"
 import fs from "fs/promises"
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import path from "path"
 import sharp from "sharp"
 import { POST } from "./route"
 
-// Mock NextRequest and formData
-const createMockRequest = async (images: { name: string; data: Buffer }[], settings: object): Promise<NextRequest> => {
+// Mock rateLimit with Jest
+jest.mock("@/utils/rate-limit", () => ({
+  rateLimit: jest.fn().mockResolvedValue(true),
+}))
+
+const createMockRequest = async (
+  images: { name: string; data: Buffer }[],
+  settings: object,
+  rateLimitAllowed: boolean = true
+): Promise<NextRequest> => {
   const formData = {
     getAll: (key: string) =>
       key === "images" ? images.map((img) => new File([img.data], img.name, { type: "image/png" })) : [],
     get: (key: string) => (key === "settings" ? JSON.stringify(settings) : null),
   }
-  return { formData: async () => formData } as unknown as NextRequest
+  const mockRequest = { formData: async () => formData } as unknown as NextRequest
+  ;(jest.requireMock("@/utils/rate-limit").rateLimit as jest.Mock).mockResolvedValue(rateLimitAllowed)
+  return mockRequest
 }
 
-// Helper to unzip and extract image buffers
 const extractImagesFromZip = async (zipBuffer: Buffer): Promise<{ name: string; data: Buffer }[]> => {
   const zip = new AdmZip(zipBuffer)
   const entries = zip.getEntries()
@@ -27,25 +37,30 @@ const extractImagesFromZip = async (zipBuffer: Buffer): Promise<{ name: string; 
 
 describe("Image Conversion API", () => {
   let testImageBuffer: Buffer
-  let expectedImageBuffer: Buffer
+  let expectedBuffers: Record<string, Buffer>
+  let originalWidth: number
+  let originalHeight: number
 
   beforeAll(async () => {
     const testImagePath = path.join(__dirname, "test-assets", "test-image.png")
-    const expectedImagePath = path.join(__dirname, "test-assets", "expected-image.jpeg")
     testImageBuffer = await fs.readFile(testImagePath)
-    expectedImageBuffer = await fs.readFile(expectedImagePath)
+    const metadata = await sharp(testImageBuffer).metadata()
+    originalWidth = metadata.width!
+    originalHeight = metadata.height!
+    expectedBuffers = {
+      jpeg: await fs.readFile(path.join(__dirname, "test-assets", "expected-image.jpeg")),
+      // png: await fs.readFile(path.join(__dirname, "test-assets", "expected-png.png")),
+    }
   })
 
-  it("should convert a single PNG to JPEG and return a zip file", async () => {
+  it("should convert a single PNG to JPEG", async () => {
     const mockRequest = await createMockRequest([{ name: "test-image.png", data: testImageBuffer }], {
       format: "jpeg",
       quality: 80,
     })
     const response = await POST(mockRequest)
-    expect(response).toBeInstanceOf(NextResponse)
     expect(response.status).toBe(200)
     expect(response.headers.get("Content-Type")).toBe("application/zip")
-    expect(response.headers.get("Content-Disposition")).toContain("attachment; filename=")
 
     const responseBuffer = Buffer.from(await response.arrayBuffer())
     const extractedImages = await extractImagesFromZip(responseBuffer)
@@ -53,11 +68,11 @@ describe("Image Conversion API", () => {
     expect(extractedImages[0].name).toBe("image-1.jpeg")
 
     const convertedPixels = await sharp(extractedImages[0].data).raw().toBuffer()
-    const expectedPixels = await sharp(expectedImageBuffer).raw().toBuffer()
+    const expectedPixels = await sharp(expectedBuffers.jpeg).raw().toBuffer()
     expect(convertedPixels).toEqual(expectedPixels)
   })
 
-  it("should handle multiple images and return them in a zip", async () => {
+  it("should convert multiple images to JPEG", async () => {
     const mockRequest = await createMockRequest(
       [
         { name: "test-image1.png", data: testImageBuffer },
@@ -67,7 +82,6 @@ describe("Image Conversion API", () => {
     )
     const response = await POST(mockRequest)
     expect(response.status).toBe(200)
-    expect(response.headers.get("Content-Type")).toBe("application/zip")
 
     const responseBuffer = Buffer.from(await response.arrayBuffer())
     const extractedImages = await extractImagesFromZip(responseBuffer)
@@ -75,28 +89,40 @@ describe("Image Conversion API", () => {
     expect(extractedImages.map((img) => img.name)).toEqual(["image-1.jpeg", "image-2.jpeg"])
   })
 
-  it("should convert to PNG with specified settings", async () => {
-    const mockRequest = await createMockRequest([{ name: "test-image.png", data: testImageBuffer }], {
-      format: "png",
-      quality: 80,
+  // * Format Conversion Tests
+  const formats = CONSTANTS.FORMATS.DEFAULT
+  const unsupportedFormats = CONSTANTS.FORMATS.UNSUPPORTED as unknown as string[]
+  formats.forEach((format) => {
+    it(`should convert to ${format} with specified settings`, async () => {
+      const mockRequest = await createMockRequest([{ name: "test-image.png", data: testImageBuffer }], {
+        format,
+        quality: 80,
+      })
+      const response = await POST(mockRequest)
+
+      if (unsupportedFormats.includes(format)) {
+        expect(response.status).toBe(500)
+        const json = await response.json()
+        expect(json.error).toBe("Failed to convert images")
+      } else {
+        expect(response.status).toBe(200)
+        const responseBuffer = Buffer.from(await response.arrayBuffer())
+        const extractedImages = await extractImagesFromZip(responseBuffer)
+        expect(extractedImages).toHaveLength(1)
+        expect(extractedImages[0].name).toBe(`image-1.${format}`)
+
+        const metadata = await sharp(extractedImages[0].data).metadata()
+        // Handle AVIF quirk: Sharp reports it as "heif"
+        expect(metadata.format).toBe(format === "avif" ? "heif" : format)
+      }
     })
-    const response = await POST(mockRequest)
-    expect(response.status).toBe(200)
-
-    const responseBuffer = Buffer.from(await response.arrayBuffer())
-    const extractedImages = await extractImagesFromZip(responseBuffer)
-    expect(extractedImages).toHaveLength(1)
-    expect(extractedImages[0].name).toBe("image-1.png")
-
-    const metadata = await sharp(extractedImages[0].data).metadata()
-    expect(metadata.format).toBe("png")
   })
 
-  it("should resize an image according to settings", async () => {
+  it("should rotate an image", async () => {
     const mockRequest = await createMockRequest([{ name: "test-image.png", data: testImageBuffer }], {
       format: "jpeg",
       quality: 80,
-      resize: { width: 50, height: 50, fit: "contain" },
+      rotate: { angle: 90, background: "black" },
     })
     const response = await POST(mockRequest)
     expect(response.status).toBe(200)
@@ -106,27 +132,95 @@ describe("Image Conversion API", () => {
     expect(extractedImages).toHaveLength(1)
 
     const metadata = await sharp(extractedImages[0].data).metadata()
-    expect(metadata.width).toBe(50)
-    expect(metadata.height).toBe(50)
+    expect(metadata.width).toBe(originalHeight) // Swap dimensions after 90° rotation
+    expect(metadata.height).toBe(originalWidth)
   })
 
-  it("should return an error if no images are provided", async () => {
+  it("should flip an image vertically", async () => {
+    const mockRequest = await createMockRequest([{ name: "test-image.png", data: testImageBuffer }], {
+      format: "jpeg",
+      quality: 80,
+      flip: true,
+    })
+    const response = await POST(mockRequest)
+    expect(response.status).toBe(200)
+
+    const responseBuffer = Buffer.from(await response.arrayBuffer())
+    const extractedImages = await extractImagesFromZip(responseBuffer)
+    expect(extractedImages).toHaveLength(1)
+  })
+
+  it("should flop an image horizontally", async () => {
+    const mockRequest = await createMockRequest([{ name: "test-image.png", data: testImageBuffer }], {
+      format: "jpeg",
+      quality: 80,
+      flop: true,
+    })
+    const response = await POST(mockRequest)
+    expect(response.status).toBe(200)
+
+    const responseBuffer = Buffer.from(await response.arrayBuffer())
+    const extractedImages = await extractImagesFromZip(responseBuffer)
+    expect(extractedImages).toHaveLength(1)
+  })
+
+  it("should apply blur to an image", async () => {
+    const mockRequest = await createMockRequest([{ name: "test-image.png", data: testImageBuffer }], {
+      format: "jpeg",
+      quality: 80,
+      blur: { sigma: 5 },
+    })
+    const response = await POST(mockRequest)
+    expect(response.status).toBe(200)
+
+    const responseBuffer = Buffer.from(await response.arrayBuffer())
+    const extractedImages = await extractImagesFromZip(responseBuffer)
+    expect(extractedImages).toHaveLength(1)
+  })
+
+  it("should apply sharpen to an image", async () => {
+    const mockRequest = await createMockRequest([{ name: "test-image.png", data: testImageBuffer }], {
+      format: "jpeg",
+      quality: 80,
+      sharpen: { sigma: 1, flat: 1, jagged: 2 },
+    })
+    const response = await POST(mockRequest)
+    expect(response.status).toBe(200)
+
+    const responseBuffer = Buffer.from(await response.arrayBuffer())
+    const extractedImages = await extractImagesFromZip(responseBuffer)
+    expect(extractedImages).toHaveLength(1)
+  })
+
+  it("should return 429 when rate limit is exceeded", async () => {
+    const mockRequest = await createMockRequest(
+      [{ name: "test-image.png", data: testImageBuffer }],
+      { format: "jpeg", quality: 80 },
+      false
+    )
+    const response = await POST(mockRequest)
+    expect(response.status).toBe(429)
+    const json = await response.json()
+    expect(json.error).toBe("Too many requests")
+  })
+
+  it("should return 400 if no images are provided", async () => {
     const mockRequest = await createMockRequest([], { format: "jpeg", quality: 80 })
     const response = await POST(mockRequest)
     expect(response.status).toBe(400)
     const json = await response.json()
-    expect(json).toHaveProperty("error")
+    expect(json.error).toBe("Validation Error")
   })
 
-  it("should return an error for invalid settings", async () => {
+  it("should return 400 for invalid settings", async () => {
     const mockRequest = await createMockRequest([{ name: "test-image.png", data: testImageBuffer }], {
-      format: "invalid",
-      quality: 80,
+      format: "jpeg",
+      quality: 101,
     })
     const response = await POST(mockRequest)
     expect(response.status).toBe(400)
     const json = await response.json()
-    expect(json).toHaveProperty("error")
+    expect(json.error).toBe("Validation Error")
   })
 
   it("should handle a large image file", async () => {

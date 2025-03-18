@@ -19,4 +19,11 @@ export const CONSTANTS = {
   CONVERSION: {
     DEFAULT_FORMAT: "webp", // Default image format
   },
+  // + Formats
+  FORMATS: {
+    // ["avif", "gif", "heif", "jp2", "jpeg", "jxl", "png", "tiff", "webp"]
+    DEFAULT: ["avif", "gif", "heif", "jp2", "jpeg", "jxl", "png", "tiff", "webp"],
+    SUPPORTED: ["avif", "gif", "jpeg", "png", "tiff", "webp"],
+    UNSUPPORTED: ["heif", "jp2", "jxl"],
+  },
 } as const

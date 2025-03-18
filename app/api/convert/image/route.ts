@@ -83,21 +83,25 @@ export async function POST(request: NextRequest) {
 
       // Add more operations here (e.g., image.grayscale(), image.tint(), etc.)
 
+      type FormatOptions = Record<string, Parameters<typeof image.toFormat>[1]>
       // Handle output format and quality
       const outputFormat = validSettings.format || CONSTANTS.CONVERSION.DEFAULT_FORMAT
-      const formatOptions: Record<string, any> = {
-        jpeg: { quality: validSettings.quality },
-        webp: { quality: validSettings.quality },
-        avif: { quality: validSettings.quality },
-        png: { compressionLevel: Math.min(9, Math.max(0, Math.round((validSettings.quality || 80) / 10))) },
-        tiff: {},
-        gif: {},
-        heif: { quality: validSettings.quality },
-        jp2: {},
-        jxl: {},
+      const unsupportedFormats = CONSTANTS.FORMATS.UNSUPPORTED as unknown as string[]
+      if (unsupportedFormats.includes(outputFormat)) {
+        throw new Error(`Format '${outputFormat}' is not supported in this environment`)
       }
 
-      if (outputFormat === "jp2k" || outputFormat === "vips") throw new Error("Format is not supported yet")
+      const formatOptions: FormatOptions = {
+        avif: { quality: validSettings.quality },
+        gif: { quality: validSettings.quality },
+        heif: { quality: validSettings.quality, compression: "hevc" },
+        jpeg: { quality: validSettings.quality },
+        jp2: { quality: validSettings.quality },
+        jxl: { quality: validSettings.quality },
+        png: { quality: validSettings.quality },
+        tiff: { quality: validSettings.quality },
+        webp: { quality: validSettings.quality },
+      }
 
       const processedBuffer = await image.toFormat(outputFormat, formatOptions[outputFormat] || {}).toBuffer()
       archive.append(processedBuffer, { name: `image-${index + 1}.${outputFormat}` })

@@ -1,32 +1,18 @@
 import { z } from "zod"
+import { CONSTANTS } from "../constants"
 
 // Define the schema for conversion settings
 export const conversionSettingsSchema = z.object({
-  maintainAspectRatio: z.boolean().default(true),
-  width: z.number().min(1).optional(),
+  blur: z
+    .object({
+      sigma: z.number().min(0.3).max(1000),
+    })
+    .optional(),
+  flip: z.boolean().optional(),
+  flop: z.boolean().optional(),
+  format: z.enum(CONSTANTS.FORMATS.DEFAULT).optional().default("webp"),
   height: z.number().min(1).optional(),
-  format: z
-    .enum([
-      "dz",
-      "fits",
-      "gif",
-      "heif",
-      "jp2k",
-      "jpeg",
-      "jxl",
-      "magick",
-      "openslide",
-      "pdf",
-      "png",
-      "ppm",
-      "raw",
-      "svg",
-      "tiff",
-      "vips",
-      "webp",
-    ])
-    .optional()
-    .default("webp"),
+  maintainAspectRatio: z.boolean().default(true),
   quality: z.number().min(1).max(100).default(80),
   resize: z
     .object({
@@ -43,13 +29,6 @@ export const conversionSettingsSchema = z.object({
       background: z.string().optional(),
     })
     .optional(),
-  flip: z.boolean().optional(),
-  flop: z.boolean().optional(),
-  blur: z
-    .object({
-      sigma: z.number().min(0.3).max(1000),
-    })
-    .optional(),
   sharpen: z
     .object({
       sigma: z.number().min(0.3).max(1000),
@@ -57,6 +36,7 @@ export const conversionSettingsSchema = z.object({
       jagged: z.number().optional(),
     })
     .optional(),
+  width: z.number().min(1).optional(),
   // Add more Sharp operations as needed (e.g., grayscale, tint, etc.)
 })
 

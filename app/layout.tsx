@@ -21,8 +21,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     ...SEO,
     // dynamically get the host from the Next headers
-    metadataBase: new URL(`https://${headers().get("host")}`),
-  }
+    metadataBase: new URL(`https://${(await headers()).get("host")}`),
+  };
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
