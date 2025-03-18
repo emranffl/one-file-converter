@@ -56,8 +56,8 @@ export default function Page() {
             Convert Images for Free
           </h1>
           <p className="lead mb-8 text-muted-foreground">
-            Professional-grade image conversion tool with support for multiple formats, batch processing, and
-            advanced optimization options.
+            Professional-grade image conversion tool with support for multiple formats, batch processing, and advanced
+            optimization options.
           </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Link

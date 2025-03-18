@@ -44,9 +44,7 @@ export function ImageConverter() {
         .slice(0, MAX_FILES - files.length)
 
       if (validFiles.length !== acceptedFiles.length) {
-        toast.error(
-          `Some files were rejected. Maximum ${MAX_FILES} files, ${MAX_FILE_SIZE / 1024 / 1024}MB each.`
-        )
+        toast.error(`Some files were rejected. Maximum ${MAX_FILES} files, ${MAX_FILE_SIZE / 1024 / 1024}MB each.`)
       }
 
       setFiles((prev) => [...prev, ...validFiles])

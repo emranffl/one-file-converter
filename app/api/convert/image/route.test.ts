@@ -1,17 +1,20 @@
-import { POST } from "./route"
-import { NextRequest, NextResponse } from "next/server"
-import fs from "fs/promises"
-import path from "path"
 import AdmZip from "adm-zip"
+import fs from "fs/promises"
+import { NextRequest, NextResponse } from "next/server"
+import path from "path"
 import sharp from "sharp"
+import { POST } from "./route"
 
 // Mock NextRequest and formData
 const createMockRequest = async (images: { name: string; data: Buffer }[], settings: object): Promise<NextRequest> => {
   const formData = {
-    getAll: (key: string) => (key === "images" ? images.map((img) => ({
-      name: img.name,
-      arrayBuffer: async () => new Uint8Array(img.data).buffer,
-    })) : []),
+    getAll: (key: string) =>
+      key === "images"
+        ? images.map((img) => ({
+            name: img.name,
+            arrayBuffer: async () => new Uint8Array(img.data).buffer,
+          }))
+        : [],
     get: (key: string) => (key === "settings" ? JSON.stringify(settings) : null),
   }
 
@@ -44,10 +47,10 @@ describe("Image Conversion API", () => {
 
   // 1. Basic Conversion Test
   it("should convert a single PNG to JPEG and return a zip file", async () => {
-    const mockRequest = await createMockRequest(
-      [{ name: "test-image.png", data: testImageBuffer }],
-      { format: "jpeg", quality: 80 }
-    )
+    const mockRequest = await createMockRequest([{ name: "test-image.png", data: testImageBuffer }], {
+      format: "jpeg",
+      quality: 80,
+    })
 
     const response = await POST(mockRequest)
     expect(response).toBeInstanceOf(NextResponse)
@@ -88,10 +91,7 @@ describe("Image Conversion API", () => {
 
   // 3. Different Format Test
   it("should convert to PNG with specified settings", async () => {
-    const mockRequest = await createMockRequest(
-      [{ name: "test-image.png", data: testImageBuffer }],
-      { format: "png" }
-    )
+    const mockRequest = await createMockRequest([{ name: "test-image.png", data: testImageBuffer }], { format: "png" })
 
     const response = await POST(mockRequest)
     expect(response.status).toBe(200)
@@ -108,10 +108,12 @@ describe("Image Conversion API", () => {
 
   // 4. Advanced Settings Test (e.g., Resize)
   it("should resize an image according to settings", async () => {
-    const mockRequest = await createMockRequest(
-      [{ name: "test-image.png", data: testImageBuffer }],
-      { format: "jpeg", quality: 80, width: 50, height: 50 }
-    )
+    const mockRequest = await createMockRequest([{ name: "test-image.png", data: testImageBuffer }], {
+      format: "jpeg",
+      quality: 80,
+      width: 50,
+      height: 50,
+    })
 
     const response = await POST(mockRequest)
     expect(response.status).toBe(200)
@@ -137,10 +139,10 @@ describe("Image Conversion API", () => {
 
   // 6. Error Case: Invalid Settings
   it("should return an error for invalid settings", async () => {
-    const mockRequest = await createMockRequest(
-      [{ name: "test-image.png", data: testImageBuffer }],
-      { format: "invalid", quality: 80 }
-    )
+    const mockRequest = await createMockRequest([{ name: "test-image.png", data: testImageBuffer }], {
+      format: "invalid",
+      quality: 80,
+    })
 
     const response = await POST(mockRequest)
     expect(response.status).toBe(400)
@@ -154,12 +156,12 @@ describe("Image Conversion API", () => {
     await sharp(largeImageBuffer, { raw: { width: 1024, height: 1024, channels: 1 } })
       .png()
       .toBuffer()
-      .then((buf) => (largeImageBuffer.set(buf)))
+      .then((buf) => largeImageBuffer.set(buf))
 
-    const mockRequest = await createMockRequest(
-      [{ name: "large-image.png", data: largeImageBuffer }],
-      { format: "jpeg", quality: 80 }
-    )
+    const mockRequest = await createMockRequest([{ name: "large-image.png", data: largeImageBuffer }], {
+      format: "jpeg",
+      quality: 80,
+    })
 
     const response = await POST(mockRequest)
     expect(response.status).toBe(200)

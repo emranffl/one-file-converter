@@ -20,8 +20,8 @@ const DESCRIPTION = String(process.env.NEXT_PUBLIC_SEO_DESCRIPTION)
 
 export const SEO: Metadata = {
   authors: {
-    name: 'Emran Hossain',
-    url: 'https://emranffl.com',
+    name: "Emran Hossain",
+    url: "https://emranffl.com",
   },
   category: "website",
   creator: "@emranffl",
@@ -62,6 +62,6 @@ export const SEO: Metadata = {
   verification: {
     other: {
       "google-adsense-account": "ca-pub-5556640164844079",
-    }
+    },
   },
 }

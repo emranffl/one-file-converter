@@ -21,9 +21,7 @@ export function ImageSettings({ settings, onSettingsChange }: ImageSettingsProps
           <Label>Output Format</Label>
           <Select
             value={settings.format}
-            onValueChange={(value) =>
-              onSettingsChange({ ...settings, format: value as ConversionSettings["format"] })
-            }
+            onValueChange={(value) => onSettingsChange({ ...settings, format: value as ConversionSettings["format"] })}
           >
             <SelectTrigger>
               <SelectValue />

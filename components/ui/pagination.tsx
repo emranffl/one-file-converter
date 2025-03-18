@@ -21,9 +21,9 @@ const PaginationContent = React.forwardRef<HTMLUListElement, React.ComponentProp
 )
 PaginationContent.displayName = "PaginationContent"
 
-const PaginationItem = React.forwardRef<HTMLLIElement, React.ComponentProps<"li">>(
-  ({ className, ...props }, ref) => <li ref={ref} className={cn("", className)} {...props} />
-)
+const PaginationItem = React.forwardRef<HTMLLIElement, React.ComponentProps<"li">>(({ className, ...props }, ref) => (
+  <li ref={ref} className={cn("", className)} {...props} />
+))
 PaginationItem.displayName = "PaginationItem"
 
 type PaginationLinkProps = {
@@ -47,12 +47,7 @@ const PaginationLink = ({ className, isActive, size = "icon", ...props }: Pagina
 PaginationLink.displayName = "PaginationLink"
 
 const PaginationPrevious = ({ className, ...props }: React.ComponentProps<typeof PaginationLink>) => (
-  <PaginationLink
-    aria-label="Go to previous page"
-    size="default"
-    className={cn("gap-1 pl-2.5", className)}
-    {...props}
-  >
+  <PaginationLink aria-label="Go to previous page" size="default" className={cn("gap-1 pl-2.5", className)} {...props}>
     <ChevronLeft className="h-4 w-4" />
     <span>Previous</span>
   </PaginationLink>
@@ -60,12 +55,7 @@ const PaginationPrevious = ({ className, ...props }: React.ComponentProps<typeof
 PaginationPrevious.displayName = "PaginationPrevious"
 
 const PaginationNext = ({ className, ...props }: React.ComponentProps<typeof PaginationLink>) => (
-  <PaginationLink
-    aria-label="Go to next page"
-    size="default"
-    className={cn("gap-1 pr-2.5", className)}
-    {...props}
-  >
+  <PaginationLink aria-label="Go to next page" size="default" className={cn("gap-1 pr-2.5", className)} {...props}>
     <span>Next</span>
     <ChevronRight className="h-4 w-4" />
   </PaginationLink>
