@@ -9,7 +9,7 @@ import { Analytics } from "@vercel/analytics/react"
 import type { Metadata } from "next"
 import { Lato } from "next/font/google"
 import { headers } from "next/headers"
-import "/styles/globals.scss"
+import "../styles/globals.scss"
 
 const lato = Lato({
   weight: ["100", "300", "400", "700", "900"],
@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ...SEO,
     // dynamically get the host from the Next headers
     metadataBase: new URL(`https://${(await headers()).get("host")}`),
-  };
+  }
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

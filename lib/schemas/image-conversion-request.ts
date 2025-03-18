@@ -18,20 +18,20 @@ export const conversionSettingsSchema = z.object({
     .object({
       width: z.number().min(1).optional(),
       height: z.number().min(1).optional(),
-      maintainAspectRatio: z.boolean().default(true),
+      maintainAspectRatio: z.boolean().default(true).optional(),
       fit: z.enum(["cover", "contain", "fill", "inside", "outside"]).optional(),
       position: z.string().optional(),
     })
     .optional(),
   rotate: z
     .object({
-      angle: z.number(),
+      angle: z.number().optional(),
       background: z.string().optional(),
     })
     .optional(),
   sharpen: z
     .object({
-      sigma: z.number().min(0.3).max(1000),
+      sigma: z.number().min(0.3).max(1000).optional(),
       flat: z.number().optional(),
       jagged: z.number().optional(),
     })

@@ -23,9 +23,8 @@ export function ImageConverter() {
   const [settings, setSettings] = useState<ConversionSettings>({
     format: "webp",
     quality: 80,
-    width: undefined,
-    height: undefined,
     maintainAspectRatio: true,
+    resize: {},
   })
 
   const validateSettings = () => {
@@ -73,15 +72,13 @@ export function ImageConverter() {
         const xhr = new XMLHttpRequest()
         xhr.open("POST", PATHS.CONVERT.IMAGE.root, true)
 
-        // Set up progress event listener for upload
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable) {
             const percentComplete = Math.round((event.loaded / event.total) * 100)
-            setProgress(percentComplete) // Update the progress state
+            setProgress(percentComplete)
           }
         }
 
-        // Handle the response
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             resolve(xhr.response)
@@ -95,10 +92,8 @@ export function ImageConverter() {
           }
         }
 
-        // Handle network errors
         xhr.onerror = () => reject(new Error("Network error occurred"))
 
-        // Send the form data
         xhr.responseType = "blob"
         xhr.send(formData)
       })
@@ -149,7 +144,15 @@ export function ImageConverter() {
               <ImagePreviewer key={index} file={file} onRemove={() => removeFile(index)} />
             ))}
           </div>
-          <SocialMediaPresets onPresetSelect={(preset) => setSettings({ ...settings, ...preset })} />
+          <SocialMediaPresets
+            onPresetSelect={(preset) =>
+              setSettings({
+                ...settings,
+                format: preset.format || settings.format,
+                resize: { ...settings.resize, ...preset.resize },
+              })
+            }
+          />
 
           <ImageSettings settings={settings} onSettingsChange={setSettings} />
 

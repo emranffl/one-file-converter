@@ -25,10 +25,12 @@ export function SocialMediaPresets({ onPresetSelect }: SocialMediaPresetsProps) 
               className="h-auto flex-col items-start p-4 text-left"
               onClick={() =>
                 onPresetSelect({
-                  width: preset.width,
-                  height: preset.height,
                   format: preset.format,
-                  maintainAspectRatio: false,
+                  resize: {
+                    width: preset.width,
+                    height: preset.height,
+                    maintainAspectRatio: false,
+                  },
                 })
               }
             >
