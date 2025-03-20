@@ -68,6 +68,7 @@
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
     "fs-extra": "^11.2.0",
+    "gsap": "^3.12.7",
     "ignore-loader": "^0.1.2",
     "input-otp": "^1.2.4",
     "lucide-react": "0.446.0",

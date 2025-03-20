@@ -67,15 +67,16 @@
     }
   ],
   "cSpell.words": [
-    "clsx",
-    "lucide",
-    "tanstack",
-    "uuidv",
-    "Emran",
-    "Hossain",
-    "emranffl",
     "adsense",
+    "clsx",
+    "Emran",
+    "emranffl",
+    "gsap",
+    "Hossain",
+    "lucide",
     "sonner",
-    "turbopack"
+    "tanstack",
+    "turbopack",
+    "uuidv"
   ]
 }
