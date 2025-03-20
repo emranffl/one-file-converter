@@ -4,6 +4,7 @@ import { rateLimit } from "@/utils/rate-limit"
 import { responseHandler } from "@/utils/response-handler"
 import archiver from "archiver"
 import { NextRequest, NextResponse } from "next/server"
+import { basename, extname } from "path"
 import sharp from "sharp"
 
 export async function POST(request: NextRequest) {
@@ -85,8 +86,8 @@ export async function POST(request: NextRequest) {
 
       type FormatOptions = Record<string, Parameters<typeof image.toFormat>[1]>
       // Handle output format and quality
-      const outputFormat = validSettings.format || CONSTANTS.CONVERSION.DEFAULT_FORMAT
-      const unsupportedFormats = CONSTANTS.FORMATS.UNSUPPORTED as unknown as string[]
+      const outputFormat = validSettings.format || CONSTANTS.IMAGE_PROCESSING.CONVERSION.DEFAULT_FORMAT
+      const unsupportedFormats = CONSTANTS.IMAGE_PROCESSING.FORMATS.UNSUPPORTED as unknown as string[]
       if (unsupportedFormats.includes(outputFormat)) {
         throw new Error(`Format '${outputFormat}' is not supported in this environment`)
       }
@@ -103,8 +104,11 @@ export async function POST(request: NextRequest) {
         webp: { quality: validSettings.quality },
       }
 
+      // Get the original filename from the File object
+      const originalName = file.name // e.g., "photo.jpg"
+      const newFileName = `${basename(originalName, extname(originalName))}.${outputFormat}`
       const processedBuffer = await image.toFormat(outputFormat, formatOptions[outputFormat] || {}).toBuffer()
-      archive.append(processedBuffer, { name: `image-${index + 1}.${outputFormat}` })
+      archive.append(processedBuffer, { name: newFileName })
     }
 
     archive.finalize()

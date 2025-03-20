@@ -10,7 +10,7 @@ export const conversionSettingsSchema = z.object({
     .optional(),
   flip: z.boolean().optional(),
   flop: z.boolean().optional(),
-  format: z.enum(CONSTANTS.FORMATS.DEFAULT).optional().default("webp"),
+  format: z.enum(CONSTANTS.IMAGE_PROCESSING.FORMATS.DEFAULT).optional().default("webp"),
   height: z.number().min(1).optional(),
   maintainAspectRatio: z.boolean().default(true),
   quality: z.number().min(1).max(100).default(80),

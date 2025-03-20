@@ -124,7 +124,8 @@ export function ImageConverter() {
         {...getRootProps()}
         className={cn(
           "cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors",
-          isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25"
+          isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25",
+          files.length >= MAX_FILES && "hidden"
         )}
       >
         <input {...getInputProps()} />

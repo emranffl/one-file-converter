@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
+import { CONSTANTS } from "@/lib/constants"
 import { type ConversionSettings } from "@/lib/schemas/image-conversion-request"
 
 interface ImageSettingsProps {
@@ -28,10 +29,11 @@ export function ImageSettings({ settings, onSettingsChange }: ImageSettingsProps
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="webp">WebP</SelectItem>
-              <SelectItem value="png">PNG</SelectItem>
-              <SelectItem value="jpg">JPG</SelectItem>
-              <SelectItem value="gif">GIF</SelectItem>
+              {CONSTANTS.IMAGE_PROCESSING.FORMATS.SUPPORTED.map((format) => (
+                <SelectItem key={format} value={format}>
+                  {format}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
