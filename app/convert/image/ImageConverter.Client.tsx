@@ -138,7 +138,7 @@ export function ImageConverter() {
         </div>
       </div>
 
-      {files.length > 0 && (
+      {files.length > -1 && (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {files.map((file, index) => (
