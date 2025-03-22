@@ -1,6 +1,6 @@
 import { LINKS } from "@/configs/router.config"
 import { execSync } from "child_process"
-import { statSync } from "fs"
+import { existsSync, statSync } from "fs"
 import { MetadataRoute } from "next"
 import { join } from "path"
 
@@ -21,11 +21,26 @@ function collectInternalRoutes(obj: any): string[] {
   return routes
 }
 
+// Function to find the correct file path (supports .ts and .tsx)
+function findPageFilePath(route: string): string | null {
+  const basePath = route === "/" ? "page" : join(...route.split("/").filter(Boolean), "page")
+  const possibleExtensions = [".tsx", ".ts"]
+  const dir = join("app", basePath)
+
+  for (const ext of possibleExtensions) {
+    const filePath = `${dir}${ext}`
+    if (existsSync(filePath)) {
+      return filePath
+    }
+  }
+  return null // Return null if no file is found
+}
+
 // Function to get the last modification date of a file
 function getLastModifiedDate(filePath: string): Date {
   try {
     // Attempt to get the last commit date from Git
-    const command = `git log -1 --format=%cd --date=iso-strict ${filePath}`
+    const command = `git log -1 --format=%cd --date=iso-strict -- "${filePath}"`
     const gitDate = execSync(command).toString().trim()
     if (gitDate) {
       return new Date(gitDate)
@@ -48,15 +63,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL as string
   // Get all internal routes from LINKS
   const internalRoutes = collectInternalRoutes(LINKS)
+  const priority = (route: string) => (route === "/" ? 1 : 0.8)
 
-  return internalRoutes.map((route) => {
-    const filePath = join("app", route === "/" ? "page.ts" : `${route}/page.ts`)
-    const lastModified = getLastModifiedDate(filePath)
+  return internalRoutes
+    .map((route) => {
+      const filePath = findPageFilePath(route)
+      if (!filePath) {
+        console.warn(`No page file found for route ${route}. Using current date for lastModified.`)
+        return {
+          url: baseUrl + route,
+          lastModified: new Date(),
+          priority: priority(route),
+        }
+      }
 
-    return {
-      url: baseUrl + route,
-      lastModified,
-      priority: route === "/" ? 1 : 0.8,
-    }
-  })
+      const lastModified = getLastModifiedDate(filePath)
+      return {
+        url: baseUrl + route,
+        lastModified,
+        priority: priority(route),
+      }
+    })
+    .filter(Boolean) // Remove any null/undefined entries
 }
